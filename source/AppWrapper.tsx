@@ -1,12 +1,10 @@
 import React from 'react';
-import {StyleSheet, View, ActivityIndicator} from 'react-native';
-import {AppProvider, UserProvider, RealmProvider} from '@realm/react';
-import {appId, baseUrl} from '../atlasConfig.json';
+import { StyleSheet, View, ActivityIndicator } from 'react-native';
+import { RealmProvider } from '@realm/react';
 
-import {App} from './App';
-import {WelcomeView} from './WelcomeView';
+import { App } from './App';
 
-import {Item} from './ItemSchema';
+import { Item } from './ItemSchema';
 
 const LoadingIndicator = () => {
   return (
@@ -18,22 +16,9 @@ const LoadingIndicator = () => {
 
 export const AppWrapper = () => {
   return (
-    <AppProvider id={appId} baseUrl={baseUrl}>
-      <UserProvider fallback={WelcomeView}>
-        <RealmProvider
-          schema={[Item]}
-          sync={{
-            flexible: true,
-            onError: (_session, error) => {
-              // Show sync errors in the console
-              console.error(error);
-            },
-          }}
-          fallback={LoadingIndicator}>
-          <App />
-        </RealmProvider>
-      </UserProvider>
-    </AppProvider>
+    <RealmProvider schema={[Item]} fallback={LoadingIndicator}>
+      <App />
+    </RealmProvider>
   );
 };
 

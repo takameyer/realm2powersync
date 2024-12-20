@@ -1,67 +1,37 @@
-import React, { useCallback, useState, useEffect } from 'react';
-import { BSON } from 'realm';
-import { useUser, useRealm, useQuery } from '@realm/react';
-import { SafeAreaProvider } from 'react-native-safe-area-context';
-import { Alert, FlatList, Pressable, StyleSheet, Switch, Text, View } from 'react-native';
-import { Button, Overlay, ListItem } from '@rneui/base';
-import { dataExplorerLink } from '../atlasConfig.json';
+import React, {useCallback, useState} from 'react';
+import {BSON} from 'realm';
+import {useRealm, useQuery} from '@realm/react';
+import {SafeAreaProvider} from 'react-native-safe-area-context';
+import {
+  Alert,
+  FlatList,
+  Pressable,
+  StyleSheet,
+  Switch,
+  Text,
+  View,
+} from 'react-native';
+import {Button, Overlay, ListItem} from '@rneui/base';
 
-import { CreateToDoPrompt } from './CreateToDoPrompt';
+import {CreateToDoPrompt} from './CreateToDoPrompt';
 
-import { Item } from './ItemSchema';
-import { colors } from './Colors';
-
-// If you're getting this app code by cloning the repository at
-// https://github.com/mongodb/ template-app-react-native-todo,
-// it does not contain the data explorer link. Download the
-// app template from the Atlas UI to view a link to your data
-const dataExplorerMessage = `View your data in MongoDB Atlas: ${dataExplorerLink}.`;
-
-const itemSubscriptionName = 'items';
-const ownItemsSubscriptionName = 'ownItems';
+import {Item} from './ItemSchema';
+import {colors} from './Colors';
 
 export function ItemListView() {
   const realm = useRealm();
   const items = useQuery(Item).sorted('_id');
-  const user = useUser();
+  const user = {id: 'mockUserId'};
 
   const [showNewItemOverlay, setShowNewItemOverlay] = useState(false);
 
-  // This state will be used to toggle between showing all items and only showing the current user's items
-  // This is initialized based on which subscription is already active
-  const [showAllItems, setShowAllItems] = useState(
-    !!realm.subscriptions.findByName(itemSubscriptionName),
-  );
-
-  // This effect will initialize the subscription to the items collection
-  // By default it will filter out all items that do not belong to the current user
-  // If the user toggles the switch to show all items, the subscription will be updated to show all items
-  // The old subscription will be removed and the new subscription will be added
-  // This allows for tracking the state of the toggle switch by the name of the subscription
-  useEffect(() => {
-    if (showAllItems) {
-      realm.subscriptions.update(mutableSubs => {
-        mutableSubs.removeByName(ownItemsSubscriptionName);
-        mutableSubs.add(realm.objects(Item), { name: itemSubscriptionName });
-      });
-    } else {
-      realm.subscriptions.update(mutableSubs => {
-        mutableSubs.removeByName(itemSubscriptionName);
-        mutableSubs.add(
-          realm.objects(Item).filtered(`owner_id == "${user?.id}"`),
-          { name: ownItemsSubscriptionName },
-        );
-      });
-    }
-  }, [realm, user, showAllItems]);
+  const [showAllItems, setShowAllItems] = useState(true);
 
   // createItem() takes in a summary and then creates an Item object with that summary
   const createItem = useCallback(
-    ({ summary }: { summary: string }) => {
+    ({summary}: {summary: string}) => {
       // if the realm exists, create an Item
       realm.write(() => {
-        console.log(dataExplorerMessage);
-
         return new Item(realm, {
           summary,
           owner_id: user?.id,
@@ -83,7 +53,6 @@ export function ItemListView() {
           realm.write(() => {
             realm.delete(item);
           });
-          console.log(dataExplorerMessage);
         }
       }
     },
@@ -101,7 +70,6 @@ export function ItemListView() {
           realm.write(() => {
             item.isComplete = !item.isComplete;
           });
-          console.log(dataExplorerMessage);
         }
       }
     },
@@ -114,13 +82,8 @@ export function ItemListView() {
         <View style={styles.toggleRow}>
           <Text style={styles.toggleText}>Show All Tasks</Text>
           <Switch
-            trackColor={{ true: '#00ED64' }}
+            trackColor={{true: '#00ED64'}}
             onValueChange={() => {
-              if (realm.syncSession?.state !== 'active') {
-                Alert.alert(
-                  'Switching subscriptions does not affect Realm data when the sync is offline.',
-                );
-              }
               setShowAllItems(!showAllItems);
             }}
             value={showAllItems}
@@ -131,16 +94,16 @@ export function ItemListView() {
           overlayStyle={styles.overlay}
           onBackdropPress={() => setShowNewItemOverlay(false)}>
           <CreateToDoPrompt
-            onSubmit={({ summary }) => {
+            onSubmit={({summary}) => {
               setShowNewItemOverlay(false);
-              createItem({ summary });
+              createItem({summary});
             }}
           />
         </Overlay>
         <FlatList
           keyExtractor={item => item._id.toString()}
           data={items}
-          renderItem={({ item }) => (
+          renderItem={({item}) => (
             <ListItem key={`${item._id}`} bottomDivider topDivider>
               <ListItem.Title style={styles.itemTitle}>
                 {item.summary}
@@ -150,8 +113,9 @@ export function ItemListView() {
               </ListItem.Subtitle>
               <ListItem.Content>
                 <Pressable
-                  accessibilityLabel={`Mark task as ${item.isComplete ? 'not done' : 'done'
-                    }`}
+                  accessibilityLabel={`Mark task as ${
+                    item.isComplete ? 'not done' : 'done'
+                  }`}
                   onPress={() => toggleItemIsComplete(item._id)}
                   style={[
                     styles.status,
@@ -167,7 +131,7 @@ export function ItemListView() {
                   accessibilityLabel={'Remove Item'}
                   onPress={() => deleteItem(item._id)}
                   style={styles.delete}>
-                  <Text style={[styles.statusIcon, { color: 'blue' }]}>
+                  <Text style={[styles.statusIcon, {color: 'blue'}]}>
                     DELETE
                   </Text>
                 </Pressable>
