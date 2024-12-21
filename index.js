@@ -2,6 +2,7 @@
  * @format
  */
 
+import '@azure/core-asynciterator-polyfill';
 import 'react-native-get-random-values';
 import {AppRegistry} from 'react-native';
 import {AppWrapper} from './source/AppWrapper';
