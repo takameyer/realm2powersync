@@ -1,32 +1,21 @@
 import React from 'react';
-import { StyleSheet, View, ActivityIndicator } from 'react-native';
-import { RealmProvider } from '@realm/react';
+import {App} from './App';
+import {AppSchema} from './ItemSchema';
+import {PowerSyncContext, PowerSyncDatabase} from '@powersync/react-native';
 
-import { App } from './App';
+const powerSync = new PowerSyncDatabase({
+  schema: AppSchema,
+  database: {
+    dbFilename: 'powersync.db',
+  },
+});
 
-import { Item } from './ItemSchema';
-
-const LoadingIndicator = () => {
-  return (
-    <View style={styles.activityContainer}>
-      <ActivityIndicator size="large" />
-    </View>
-  );
-};
+powerSync.init();
 
 export const AppWrapper = () => {
   return (
-    <RealmProvider schema={[Item]} fallback={LoadingIndicator}>
+    <PowerSyncContext.Provider value={powerSync}>
       <App />
-    </RealmProvider>
+    </PowerSyncContext.Provider>
   );
 };
-
-const styles = StyleSheet.create({
-  activityContainer: {
-    flex: 1,
-    flexDirection: 'row',
-    justifyContent: 'space-around',
-    padding: 10,
-  },
-});

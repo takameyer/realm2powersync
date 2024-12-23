@@ -1,12 +1,12 @@
 import React from 'react';
-import { SafeAreaProvider } from 'react-native-safe-area-context';
-import { StyleSheet, Text, View } from 'react-native';
-import { NavigationContainer } from '@react-navigation/native';
-import { createStackNavigator } from '@react-navigation/stack';
+import {SafeAreaProvider} from 'react-native-safe-area-context';
+import {StyleSheet, Text, View} from 'react-native';
+import {NavigationContainer} from '@react-navigation/native';
+import {createStackNavigator} from '@react-navigation/stack';
 
-import { LogoutButton } from './LogoutButton';
-import { ItemListView } from './ItemListView';
-import { OfflineModeButton } from './OfflineModeButton';
+import {LogoutButton} from './LogoutButton';
+import {ItemListView} from './ItemListView';
+import {OfflineModeButton} from './OfflineModeButton';
 
 const Stack = createStackNavigator();
 
