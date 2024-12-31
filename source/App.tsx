@@ -4,7 +4,7 @@ import {StyleSheet, Text, View} from 'react-native';
 import {NavigationContainer} from '@react-navigation/native';
 import {createStackNavigator} from '@react-navigation/stack';
 
-import {LogoutButton} from './LogoutButton';
+import {ResetButton} from './ResetButton';
 import {ItemListView} from './ItemListView';
 import {OfflineModeButton} from './OfflineModeButton';
 
@@ -15,7 +15,7 @@ const headerRight = () => {
 };
 
 const headerLeft = () => {
-  return <LogoutButton />;
+  return <ResetButton />;
 };
 
 export const App = () => {
@@ -31,7 +31,7 @@ export const App = () => {
               component={ItemListView}
               options={{
                 headerTitleAlign: 'center',
-                //headerLeft,
+                headerLeft,
                 //headerRight,
               }}
             />

@@ -27,7 +27,7 @@
   {
     "isComplete": false,
     "summary": "Fix bug in login system",
-    "owner_id": "mockUserId"
+    "owner_id": "mockUserId2"
   },
   {
     "isComplete": false,
@@ -37,16 +37,16 @@
   {
     "isComplete": true,
     "summary": "Submit expense reports",
-    "owner_id": "mockUserId"
+    "owner_id": "mockUserId2"
   },
   {
     "isComplete": false,
     "summary": "Plan team building event",
-    "owner_id": "mockUserId"
+    "owner_id": "mockUserId2"
   },
   {
     "isComplete": false,
     "summary": "Review pull requests",
-    "owner_id": "mockUserId"
+    "owner_id": "mockUserId2"
   }
 ]

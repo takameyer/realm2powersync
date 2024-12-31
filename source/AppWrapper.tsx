@@ -1,16 +1,9 @@
+import {PowerSyncContext} from '@powersync/react-native';
 import React from 'react';
 import {App} from './App';
-import {AppSchema} from './ItemSchema';
-import {PowerSyncContext, PowerSyncDatabase} from '@powersync/react-native';
+import {setupPowerSync} from './PowerSync';
 
-const powerSync = new PowerSyncDatabase({
-  schema: AppSchema,
-  database: {
-    dbFilename: 'powersync.db',
-  },
-});
-
-powerSync.init();
+const powerSync = setupPowerSync();
 
 export const AppWrapper = () => {
   return (
