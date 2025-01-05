@@ -4,7 +4,7 @@ import {
   PowerSyncDatabase,
 } from '@powersync/react-native';
 
-import {AUTH_TOKEN, POWERSYNC_ENDPOINT} from '@env';
+import {AUTH_TOKEN, POWERSYNC_ENDPOINT, BACKEND_ENDPOINT} from '@env';
 
 const powerSync = new PowerSyncDatabase({
   schema: AppSchema,
@@ -23,7 +23,24 @@ class Connector {
     };
   }
   async uploadData(database: AbstractPowerSyncDatabase) {
-    console.log('Uploading data');
+    const batch = await database.getCrudBatch();
+    if (batch === null) {
+      return;
+    }
+
+    const result = await fetch(`${BACKEND_ENDPOINT}/update`, {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json',
+      },
+      body: JSON.stringify(batch.crud),
+    });
+
+    if (!result.ok) {
+      throw new Error('Failed to upload data');
+    }
+
+    batch.complete();
   }
 }
 

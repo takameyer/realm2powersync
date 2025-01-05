@@ -21,8 +21,6 @@ const headerLeft = () => {
 export const App = () => {
   return (
     <>
-      {/* All screens nested in RealmProvider have access
-            to the configured realm's hooks. */}
       <SafeAreaProvider>
         <NavigationContainer>
           <Stack.Navigator>
