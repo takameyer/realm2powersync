@@ -20,7 +20,7 @@ import {ObjectId} from 'bson';
 
 export function ItemListView() {
   const db = usePowerSync();
-  const {data: items} = useQuery<Item>('SELECT * FROM Item');
+  const {data: items} = useQuery<Item>('SELECT * FROM Item ORDER BY id');
 
   const user = useMemo(
     () => ({
@@ -30,7 +30,6 @@ export function ItemListView() {
   );
 
   const [showNewItemOverlay, setShowNewItemOverlay] = useState(false);
-
   const [showAllItems, setShowAllItems] = useState(true);
 
   // createItem() takes in a summary and then creates an Item object with that summary

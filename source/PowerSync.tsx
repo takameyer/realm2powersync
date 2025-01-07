@@ -24,6 +24,7 @@ class Connector {
   }
   async uploadData(database: AbstractPowerSyncDatabase) {
     const batch = await database.getCrudBatch();
+
     if (batch === null) {
       return;
     }
