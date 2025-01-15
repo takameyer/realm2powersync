@@ -1,23 +1,19 @@
 import React, {useCallback} from 'react';
 import {Pressable, Alert, View, Text, StyleSheet} from 'react-native';
-import {useUser} from '@realm/react';
 import {colors} from './Colors';
+import {resetPowerSync} from './PowerSync';
 
-export function LogoutButton() {
-  const user = useUser();
-
-  // The signOut function calls the logOut function on the currently
-  // logged in user and then navigates to the welcome screen
+export function ResetButton() {
   const signOut = useCallback(() => {
-    user?.logOut();
-  }, [user]);
+    resetPowerSync();
+  }, []);
 
   return (
     <Pressable
       onPress={() => {
-        Alert.alert('Log Out', '', [
+        Alert.alert('Reset Database?', '', [
           {
-            text: 'Yes, Log Out',
+            text: 'Yes, Reset Database',
             style: 'destructive',
             onPress: () => signOut(),
           },
@@ -25,7 +21,7 @@ export function LogoutButton() {
         ]);
       }}>
       <View style={styles.buttonContainer}>
-        <Text style={styles.buttonText}>Log Out</Text>
+        <Text style={styles.buttonText}>Reset</Text>
       </View>
     </Pressable>
   );

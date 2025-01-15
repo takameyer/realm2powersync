@@ -1,111 +1,88 @@
-import React, { useCallback, useState, useEffect } from 'react';
-import { BSON } from 'realm';
-import { useUser, useRealm, useQuery } from '@realm/react';
-import { SafeAreaProvider } from 'react-native-safe-area-context';
-import { Alert, FlatList, Pressable, StyleSheet, Switch, Text, View } from 'react-native';
-import { Button, Overlay, ListItem } from '@rneui/base';
-import { dataExplorerLink } from '../atlasConfig.json';
+import React, {useCallback, useMemo, useState} from 'react';
+import {SafeAreaProvider} from 'react-native-safe-area-context';
+import {
+  Alert,
+  FlatList,
+  Pressable,
+  StyleSheet,
+  Switch,
+  Text,
+  View,
+} from 'react-native';
+import {Button, Overlay, ListItem} from '@rneui/base';
 
-import { CreateToDoPrompt } from './CreateToDoPrompt';
+import {CreateToDoPrompt} from './CreateToDoPrompt';
 
-import { Item } from './ItemSchema';
-import { colors } from './Colors';
-
-// If you're getting this app code by cloning the repository at
-// https://github.com/mongodb/ template-app-react-native-todo,
-// it does not contain the data explorer link. Download the
-// app template from the Atlas UI to view a link to your data
-const dataExplorerMessage = `View your data in MongoDB Atlas: ${dataExplorerLink}.`;
-
-const itemSubscriptionName = 'items';
-const ownItemsSubscriptionName = 'ownItems';
+import {Item} from './ItemSchema';
+import {colors} from './Colors';
+import {usePowerSync, useQuery} from '@powersync/react-native';
+import {ObjectId} from 'bson';
+import {toggleViewAll} from './PowerSync';
 
 export function ItemListView() {
-  const realm = useRealm();
-  const items = useQuery(Item).sorted('_id');
-  const user = useUser();
+  const db = usePowerSync();
+  const {data: items} = useQuery<Item>('SELECT * FROM Item ORDER BY id');
 
-  const [showNewItemOverlay, setShowNewItemOverlay] = useState(false);
-
-  // This state will be used to toggle between showing all items and only showing the current user's items
-  // This is initialized based on which subscription is already active
-  const [showAllItems, setShowAllItems] = useState(
-    !!realm.subscriptions.findByName(itemSubscriptionName),
+  const user = useMemo(
+    () => ({
+      id: 'mockUserId',
+    }),
+    [],
   );
 
-  // This effect will initialize the subscription to the items collection
-  // By default it will filter out all items that do not belong to the current user
-  // If the user toggles the switch to show all items, the subscription will be updated to show all items
-  // The old subscription will be removed and the new subscription will be added
-  // This allows for tracking the state of the toggle switch by the name of the subscription
-  useEffect(() => {
-    if (showAllItems) {
-      realm.subscriptions.update(mutableSubs => {
-        mutableSubs.removeByName(ownItemsSubscriptionName);
-        mutableSubs.add(realm.objects(Item), { name: itemSubscriptionName });
-      });
-    } else {
-      realm.subscriptions.update(mutableSubs => {
-        mutableSubs.removeByName(itemSubscriptionName);
-        mutableSubs.add(
-          realm.objects(Item).filtered(`owner_id == "${user?.id}"`),
-          { name: ownItemsSubscriptionName },
-        );
-      });
-    }
-  }, [realm, user, showAllItems]);
+  const [showNewItemOverlay, setShowNewItemOverlay] = useState(false);
+  const [showAllItems, setShowAllItems] = useState(false);
 
   // createItem() takes in a summary and then creates an Item object with that summary
   const createItem = useCallback(
-    ({ summary }: { summary: string }) => {
-      // if the realm exists, create an Item
-      realm.write(() => {
-        console.log(dataExplorerMessage);
+    async ({summary}: {summary: string}) => {
+      try {
+        // start a write transaction to insert the new Item
+        db.writeTransaction(async tx => {
+          await tx.execute(
+            'INSERT INTO Item (id, summary, owner_id, isComplete) VALUES (?, ?, ?, ?)',
 
-        return new Item(realm, {
-          summary,
-          owner_id: user?.id,
+            [new ObjectId().toHexString(), summary, user?.id, false],
+          );
         });
-      });
+      } catch (ex: any) {
+        Alert.alert('Error', ex?.message);
+      }
     },
-    [realm, user],
+    [db],
   );
 
   // deleteItem() deletes an Item with a particular _id
   const deleteItem = useCallback(
-    (id: BSON.ObjectId) => {
-      // if the realm exists, get the Item with a particular _id and delete it
-      const item = realm.objectForPrimaryKey(Item, id); // search for a realm object with a primary key that is an objectId
-      if (item) {
-        if (item.owner_id !== user?.id) {
-          Alert.alert("You can't delete someone else's task!");
-        } else {
-          realm.write(() => {
-            realm.delete(item);
-          });
-          console.log(dataExplorerMessage);
-        }
+    async (id: String) => {
+      // start a write transaction to delete the Item
+      try {
+        db.writeTransaction(async tx => {
+          await tx.execute('DELETE FROM Item WHERE id = ?', [id]);
+        });
+      } catch (ex: any) {
+        Alert.alert('Error', ex?.message);
       }
     },
-    [realm, user],
+    [db],
   );
+
   // toggleItemIsComplete() updates an Item with a particular _id to be 'completed'
   const toggleItemIsComplete = useCallback(
-    (id: BSON.ObjectId) => {
-      // if the realm exists, get the Item with a particular _id and update it's 'isCompleted' field
-      const item = realm.objectForPrimaryKey(Item, id); // search for a realm object with a primary key that is an objectId
-      if (item) {
-        if (item.owner_id !== user?.id) {
-          Alert.alert("You can't modify someone else's task!");
-        } else {
-          realm.write(() => {
-            item.isComplete = !item.isComplete;
-          });
-          console.log(dataExplorerMessage);
-        }
+    async (id: String) => {
+      // start a write transaction to delete the Item
+      try {
+        db.writeTransaction(async tx => {
+          await tx.execute(
+            'UPDATE Item SET isComplete = NOT isComplete WHERE id = ?',
+            [id],
+          );
+        });
+      } catch (ex: any) {
+        Alert.alert('Error', ex?.message);
       }
     },
-    [realm, user],
+    [db],
   );
 
   return (
@@ -114,14 +91,10 @@ export function ItemListView() {
         <View style={styles.toggleRow}>
           <Text style={styles.toggleText}>Show All Tasks</Text>
           <Switch
-            trackColor={{ true: '#00ED64' }}
+            trackColor={{true: '#00ED64'}}
             onValueChange={() => {
-              if (realm.syncSession?.state !== 'active') {
-                Alert.alert(
-                  'Switching subscriptions does not affect Realm data when the sync is offline.',
-                );
-              }
               setShowAllItems(!showAllItems);
+              toggleViewAll();
             }}
             value={showAllItems}
           />
@@ -131,17 +104,17 @@ export function ItemListView() {
           overlayStyle={styles.overlay}
           onBackdropPress={() => setShowNewItemOverlay(false)}>
           <CreateToDoPrompt
-            onSubmit={({ summary }) => {
+            onSubmit={({summary}) => {
               setShowNewItemOverlay(false);
-              createItem({ summary });
+              createItem({summary});
             }}
           />
         </Overlay>
         <FlatList
-          keyExtractor={item => item._id.toString()}
+          keyExtractor={item => item.id}
           data={items}
-          renderItem={({ item }) => (
-            <ListItem key={`${item._id}`} bottomDivider topDivider>
+          renderItem={({item}) => (
+            <ListItem key={`${item.id}`} bottomDivider topDivider>
               <ListItem.Title style={styles.itemTitle}>
                 {item.summary}
               </ListItem.Title>
@@ -150,9 +123,10 @@ export function ItemListView() {
               </ListItem.Subtitle>
               <ListItem.Content>
                 <Pressable
-                  accessibilityLabel={`Mark task as ${item.isComplete ? 'not done' : 'done'
-                    }`}
-                  onPress={() => toggleItemIsComplete(item._id)}
+                  accessibilityLabel={`Mark task as ${
+                    item.isComplete ? 'not done' : 'done'
+                  }`}
+                  onPress={() => toggleItemIsComplete(item.id)}
                   style={[
                     styles.status,
                     item.isComplete && styles.statusCompleted,
@@ -165,9 +139,9 @@ export function ItemListView() {
               <ListItem.Content>
                 <Pressable
                   accessibilityLabel={'Remove Item'}
-                  onPress={() => deleteItem(item._id)}
+                  onPress={() => deleteItem(item.id)}
                   style={styles.delete}>
-                  <Text style={[styles.statusIcon, { color: 'blue' }]}>
+                  <Text style={[styles.statusIcon, {color: 'blue'}]}>
                     DELETE
                   </Text>
                 </Pressable>
@@ -245,11 +219,11 @@ const styles = StyleSheet.create({
     marginHorizontal: 12,
   },
   statusCompleted: {
-    borderColor: colors.purple,
+    borderColor: colors.primary,
   },
   statusIcon: {
     textAlign: 'center',
     fontSize: 17,
-    color: colors.purple,
+    color: colors.primary,
   },
 });

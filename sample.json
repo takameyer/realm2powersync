@@ -1,0 +1,52 @@
+[
+  {
+    "isComplete": false,
+    "summary": "Complete project documentation",
+    "owner_id": "mockUserId"
+  },
+  {
+    "isComplete": true,
+    "summary": "Buy groceries",
+    "owner_id": "mockUserId"
+  },
+  {
+    "isComplete": false,
+    "summary": "Schedule dentist appointment",
+    "owner_id": "mockUserId"
+  },
+  {
+    "isComplete": false,
+    "summary": "Prepare presentation for next week",
+    "owner_id": "mockUserId"
+  },
+  {
+    "isComplete": true,
+    "summary": "Pay utility bills",
+    "owner_id": "mockUserId"
+  },
+  {
+    "isComplete": false,
+    "summary": "Fix bug in login system",
+    "owner_id": "mockUserId2"
+  },
+  {
+    "isComplete": false,
+    "summary": "Call mom",
+    "owner_id": "mockUserId"
+  },
+  {
+    "isComplete": true,
+    "summary": "Submit expense reports",
+    "owner_id": "mockUserId2"
+  },
+  {
+    "isComplete": false,
+    "summary": "Plan team building event",
+    "owner_id": "mockUserId2"
+  },
+  {
+    "isComplete": false,
+    "summary": "Review pull requests",
+    "owner_id": "mockUserId2"
+  }
+]

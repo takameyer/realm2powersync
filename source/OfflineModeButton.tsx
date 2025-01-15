@@ -1,26 +1,19 @@
 import React, {useState} from 'react';
 import {Pressable, StyleSheet, Text} from 'react-native';
-import {useRealm} from '@realm/react';
 import {colors} from './Colors';
+import {toggleConnection} from './PowerSync';
 
 export function OfflineModeButton() {
-  const realm = useRealm();
-
   const [pauseSync, togglePauseSync] = useState(false);
 
   return (
     <Pressable
       onPress={() => {
-        if (!pauseSync && realm.syncSession?.state === 'active') {
-          realm.syncSession.pause();
-          togglePauseSync(true);
-        } else if (pauseSync && realm.syncSession?.state === 'inactive') {
-          realm.syncSession.resume();
-          togglePauseSync(false);
-        }
+        toggleConnection();
+        togglePauseSync(!pauseSync);
       }}>
       <Text style={styles.buttonText}>
-        {realm.syncSession?.state === 'active' ? 'Disable Sync' : 'Enable Sync'}
+        {pauseSync ? 'Enable Sync' : 'Disable Sync'}
       </Text>
     </Pressable>
   );
