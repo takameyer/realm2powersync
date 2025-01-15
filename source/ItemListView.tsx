@@ -17,6 +17,7 @@ import {Item} from './ItemSchema';
 import {colors} from './Colors';
 import {usePowerSync, useQuery} from '@powersync/react-native';
 import {ObjectId} from 'bson';
+import {toggleViewAll} from './PowerSync';
 
 export function ItemListView() {
   const db = usePowerSync();
@@ -30,7 +31,7 @@ export function ItemListView() {
   );
 
   const [showNewItemOverlay, setShowNewItemOverlay] = useState(false);
-  const [showAllItems, setShowAllItems] = useState(true);
+  const [showAllItems, setShowAllItems] = useState(false);
 
   // createItem() takes in a summary and then creates an Item object with that summary
   const createItem = useCallback(
@@ -93,6 +94,7 @@ export function ItemListView() {
             trackColor={{true: '#00ED64'}}
             onValueChange={() => {
               setShowAllItems(!showAllItems);
+              toggleViewAll();
             }}
             value={showAllItems}
           />

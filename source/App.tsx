@@ -30,7 +30,7 @@ export const App = () => {
               options={{
                 headerTitleAlign: 'center',
                 headerLeft,
-                //headerRight,
+                headerRight,
               }}
             />
           </Stack.Navigator>

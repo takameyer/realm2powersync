@@ -6,6 +6,9 @@ import {
 
 import {AUTH_TOKEN, POWERSYNC_ENDPOINT, BACKEND_ENDPOINT} from '@env';
 
+let viewAll = false;
+let connection = true;
+
 const powerSync = new PowerSyncDatabase({
   schema: AppSchema,
   database: {
@@ -29,6 +32,8 @@ class Connector {
       return;
     }
 
+    console.log('Uploading data', batch.crud);
+
     const result = await fetch(`${BACKEND_ENDPOINT}/update`, {
       method: 'POST',
       headers: {
@@ -47,11 +52,25 @@ class Connector {
 
 export const setupPowerSync = (): PowerSyncDatabase => {
   const connector = new Connector();
-  powerSync.connect(connector);
+  powerSync.connect(connector, {params: {view_all: viewAll}});
   return powerSync;
 };
 
 export const resetPowerSync = async () => {
   await powerSync.disconnectAndClear();
   setupPowerSync();
+};
+
+export const toggleViewAll = () => {
+  viewAll = !viewAll;
+  resetPowerSync();
+};
+
+export const toggleConnection = () => {
+  if (connection) {
+    powerSync.disconnect();
+  } else {
+    setupPowerSync();
+  }
+  connection = !connection;
 };
